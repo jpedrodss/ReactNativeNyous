@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -17,6 +18,18 @@ const Autenticado = () => {
     <Drawer.Navigator initialRouteName="Home">
       <Drawer.Screen name="Home" component={Home} />
     </Drawer.Navigator>
+  )
+}
+
+const Logout = ( {navigation} ) => {
+  return(
+    <View>
+      <Text>Deseja realmente sair da aplicação?</Text>
+      <Button onPress={() => {
+        AsyncStorage.removeItem('@jwt');
+        navigation.push('Login');
+      }} title="SAIR" ></Button>
+    </View>
   )
 }
 
