@@ -1,81 +1,82 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, KeyboardAvoidingView, Platform, View, TextInput, TouchableOpacity, Image, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { url } from '../../utils/constants'
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Login = () => {
+const Login = ({ navigation }) => {
     const [email, setEmail] = useState('')
     const [senha, setSenha] = useState('')
-    const [token, setToken] = useState('')
 
-    useEffect(() => {
-        getToken()
-    }, [])
-
-    const getToken = async () => {
-        setToken(await AsyncStorage.setItem('@jwt'))
+    const salvar = async (value) => {
+        try {
+            await AsyncStorage.setItem('@jwt', value)
+        } catch (e) {
+            // saving error
+        }
     }
 
-    const Logar = ({ navigation }) => {
+    const Logar = () => {
+
         const corpo = {
             email: email,
             senha: senha
         }
-        fetch('192.168.1.37/api/Account/login', {
-            METHOD: 'POST',
-            HEADERS: {
+
+        fetch(`${url}/api/Account/login`, {
+            method: 'POST',
+            headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(corpo)
         })
             .then(response => response.json())
             .then(data => {
+                console.log(data);
                 if (data.status != 404) {
-                    alert('Bem vindo')
-                    navigation.push('Autenticado')
-                    getToken(data.token)
+                    alert('Seja bem vindo');
+
+                    salvar(data.token);
+                    navigation.push('Autenticado');
                 } else {
-                    alert('Email ou senha inválido')
+                    alert('Email ou senha inválidos! :( ');
                 }
             })
-    }
 
-    const Logout = ({ navigation }) => {
-        return (
-            <View>
-                <Text>Deseja realmente sair da aplicação?</Text>
-                <Button onPress={() => {
-                    AsyncStorage.removeItem('@jwt')
-                    navigation.push('Login')
-                }}
-                    title="Sair"
-                ></Button>
-            </View>
-        )
     }
 
     return (
-        <View style={styles.container}>
-            <TextInput
-                style={styles.input}
-                placeholder="Coloque o email"
-                onChangeText={text => setEmail(text)}
-                defaultValue={email}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Coloque a senha"
-                onChangeText={text => setSenha(text)}
-                defaultValue={senha}
-                secureTextEntry={true}
-            />
-            <TouchableOpacity
-                style={styles.button}
-                onPress={Logar}
-            >
-                <Text styles={styles.textButton}>Entrar</Text>
-            </TouchableOpacity>
-        </View>
+        <KeyboardAvoidingView
+            behavior={Platform.OS == "ios" ? "padding" : "height"}
+            style={styles.container}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.container}>
+                    <Text style={styles.textoHeader}>Faça o login:</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Coloque o email"
+                        onChangeText={text => setEmail(text)}
+                        defaultValue={email}
+                        keyboardType={"email-address"}
+                        autoCorrect={false}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Coloque a senha"
+                        onChangeText={text => setSenha(text)}
+                        defaultValue={senha}
+                        secureTextEntry={true}
+                    />
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={Logar}
+                    >
+                        <Text style={styles.textButton}>Entrar</Text>
+                    </TouchableOpacity>
+                </View>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     )
 }
 
@@ -88,8 +89,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    textoHeader: {
+        color: '#3b3b3b',
+        fontSize: 36
+    },
     input: {
-        width: '90%',
+        width: 250,
         height: 40,
         borderColor: 'gray',
         borderWidth: 1,
@@ -98,8 +103,8 @@ const styles = StyleSheet.create({
         borderRadius: 6
     },
     button: {
-        backgroundColor: 'black',
-        width: '90%',
+        backgroundColor: '#3b3b3b',
+        width: 150,
         padding: 10,
         borderRadius: 6,
         marginTop: 20,
